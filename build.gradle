@@ -1,0 +1,32 @@
+plugins {
+    id 'java'
+}
+
+group 'top.bruned'
+version '1.0-SNAPSHOT'
+jar {
+    manifest {
+        attributes (
+                "Manifest-Version": 1.0,
+                'Main-Class': 'top.bruned.kaiheila.framework.Main'
+        )
+    }
+    from {
+        configurations.compile.collect { it.isDirectory() ? it : zipTree(it) }
+    }
+}
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    compile files('D:\\UsersData\\Desktop\\Java\\kaiheila_bot_sdk\\build\\libs\\kaiheila_bot_sdk-1.0-SNAPSHOT.jar')
+    compile("org.java-websocket:Java-WebSocket:1.5.1")
+    compile("org.slf4j:slf4j-simple:1.7.9")
+    compile("com.alibaba:fastjson:1.2.75")
+    compile("org.apache.commons:commons-configuration2:2.7")
+}
+
+tasks.withType(JavaCompile) {
+    options.encoding = "UTF-8"
+}
