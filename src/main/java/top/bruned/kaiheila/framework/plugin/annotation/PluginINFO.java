@@ -9,6 +9,8 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 public @interface PluginINFO {
     String PluginName();
+
     String Version() default "0.0.0";
+
     String Author();
 }

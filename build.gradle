@@ -1,9 +1,11 @@
 plugins {
     id 'java'
+
 }
 
 group 'top.bruned'
 version '1.0-SNAPSHOT'
+
 jar {
     manifest {
         attributes (
@@ -20,7 +22,7 @@ repositories {
 }
 
 dependencies {
-    compile files('D:\\UsersData\\Desktop\\Java\\kaiheila_bot_sdk\\build\\libs\\kaiheila_bot_sdk-1.0-SNAPSHOT.jar')
+    compile project(":kaiheila_bot_sdk")
     compile("org.java-websocket:Java-WebSocket:1.5.1")
     compile("org.slf4j:slf4j-simple:1.7.9")
     compile("com.alibaba:fastjson:1.2.75")

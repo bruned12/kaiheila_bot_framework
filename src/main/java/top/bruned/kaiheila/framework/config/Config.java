@@ -8,14 +8,14 @@ import java.io.IOException;
 import java.util.Properties;
 
 public class Config {
-    private File configPath =  new File("./config");
-    private Properties properties = new Properties();
     public File configFile;
+    private final File configPath = new File("./config");
+    private final Properties properties = new Properties();
     private FileWriter writer;
 
-    public Config(String PluginName){
-        this.configFile = new File(configPath, PluginName+".properties");
-        if (!this.configFile.exists()){
+    public Config(String PluginName) {
+        this.configFile = new File(configPath, PluginName + ".properties");
+        if (!this.configFile.exists()) {
             try {
                 configFile.createNewFile();
             } catch (IOException e) {
@@ -34,7 +34,7 @@ public class Config {
         }
     }
 
-    public void save(){
+    public void save() {
         try {
             writer.write(properties.toString());
         } catch (IOException e) {
@@ -47,10 +47,11 @@ public class Config {
         }
     }
 
-    public String getProperty(String key){
+    public String getProperty(String key) {
         return properties.getProperty(key);
     }
-    public void setProperty(String key,String value){
-        properties.setProperty(key,value);
+
+    public void setProperty(String key, String value) {
+        properties.setProperty(key, value);
     }
 }

@@ -12,33 +12,33 @@ import java.util.Collections;
 import java.util.List;
 
 public class EventChannel {
-    private List<PluginMethod> GroupMessageEventList = new ArrayList<>();
-    private List<PluginMethod> PluginMethodList = new ArrayList<>();
-    private Log log = new Log("事件管道");
+    private final List<PluginMethod> GroupMessageEventList = new ArrayList<>();
+    private final List<PluginMethod> PluginMethodList = new ArrayList<>();
+    private final Log log = new Log("事件管道");
 
-    public void registerEventClass(Object eventObject){
+    public void registerEventClass(Object eventObject) {
         Class clz = eventObject.getClass();
         Method[] methods = clz.getDeclaredMethods();
-        for (Method method:methods){
+        for (Method method : methods) {
             log.debug(method.getName());
             Annotation[] annotations = method.getDeclaredAnnotations();
-            for (Annotation annotation:annotations){
-                if(annotation instanceof EventHandler){
+            for (Annotation annotation : annotations) {
+                if (annotation instanceof EventHandler) {
                     EventHandler eventHandler = (EventHandler) annotation;
-                    PluginMethodList.add(new PluginMethod(eventHandler.priority(),eventHandler.ignoreCancelled(),method,eventObject));
-                }
-                else {
+                    PluginMethodList.add(new PluginMethod(eventHandler.priority(), eventHandler.ignoreCancelled(), method, eventObject));
+                } else {
                     continue;
                 }
             }
         }
 
     }
-    public void eventBroadCast(Object event){
-        for (PluginMethod method:GroupMessageEventList){
+
+    public void eventBroadCast(Object event) {
+        for (PluginMethod method : GroupMessageEventList) {
 
             try {
-                method.getMethod().invoke(method.getEventObject(),event);
+                method.getMethod().invoke(method.getEventObject(), event);
             } catch (IllegalAccessException e) {
                 e.printStackTrace();
             } catch (InvocationTargetException e) {
@@ -48,9 +48,10 @@ public class EventChannel {
 
         }
     }
-    public void init(){
-        List<PluginMethod> GroupMessageEventPluginTemp= new ArrayList<>();
-        for(PluginMethod pluginMethod:PluginMethodList){
+
+    public void init() {
+        List<PluginMethod> GroupMessageEventPluginTemp = new ArrayList<>();
+        for (PluginMethod pluginMethod : PluginMethodList) {
             Class event = pluginMethod.getEventtype();
 
             if (GroupMessageEvent.class.equals(event)) {
@@ -58,7 +59,7 @@ public class EventChannel {
             }
         }
         Collections.sort(GroupMessageEventPluginTemp, new PluginsComparator());
-        for (PluginMethod pluginMethod:GroupMessageEventPluginTemp){
+        for (PluginMethod pluginMethod : GroupMessageEventPluginTemp) {
             GroupMessageEventList.add(pluginMethod);
         }
         log.debug("注册完毕");
