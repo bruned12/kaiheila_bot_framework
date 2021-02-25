@@ -18,14 +18,6 @@ public class JavaPlugin {
     public void onDisable() {
     }
 
-    public void setLog(Log log) {
-        this.log = log;
-    }
-
-    public void setBot(Bot bot) {
-        this.bot = bot;
-    }
-
     public void setEventChannel(EventChannel eventChannel) {
         this.eventChannel = eventChannel;
     }
@@ -34,7 +26,15 @@ public class JavaPlugin {
         return bot;
     }
 
+    public void setBot(Bot bot) {
+        this.bot = bot;
+    }
+
     public Log getLog() {
         return log;
+    }
+
+    public void setLog(Log log) {
+        this.log = log;
     }
 }

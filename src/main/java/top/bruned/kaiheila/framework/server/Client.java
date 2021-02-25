@@ -7,39 +7,40 @@ import org.java_websocket.handshake.ServerHandshake;
 import top.bruned.kaiheila.framework.plugin.loader.PluginManger;
 import top.bruned.kaiheila.sdk.util.Log;
 import top.bruned.kaiheila.sdk.wsclient.PING;
-import top.bruned.kaiheila.sdk.wsclient.base.*;
+import top.bruned.kaiheila.sdk.wsclient.base.EVENT;
 
-import java.lang.reflect.InvocationTargetException;
 import java.net.URI;
 
 public class Client extends WebSocketClient {
-    private Thread daemon;
-    private Log log;
-    private boolean wscs = false;
-    private PluginManger manger;
     public int sn = 0;
-    public Client(URI serverURI, Log log,PluginManger manger) {
+    private Thread daemon;
+    private final Log log;
+    private boolean wscs = false;
+    private final PluginManger manger;
+
+    public Client(URI serverURI, Log log, PluginManger manger) {
         super(serverURI);
         this.manger = manger;
         this.log = log;
     }
-    public void sendPing(){
+
+    public void sendPing() {
         while (wscs) {
             try {
-                Thread.currentThread().sleep(28000);
+                Thread.sleep(28000);
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
-            log.info("[WSS][心跳]PING SN="+this.sn);
+            log.info("[WSS][心跳]PING SN=" + this.sn);
             send(PING.PING(this.sn));
         }
         log.info("[WSS][心跳PING]结束");
     }
 
     @Override
-    public void onOpen(ServerHandshake handshakedata){
+    public void onOpen(ServerHandshake handshakedata) {
         this.wscs = true;
-        this.daemon = new Thread(()->sendPing());
+        this.daemon = new Thread(() -> sendPing());
         this.daemon.start();
 
     }
@@ -47,35 +48,35 @@ public class Client extends WebSocketClient {
     @Override
     public void onClose(int code, String reason, boolean remote) {
         this.wscs = false;
-        log.info("[WSS]断开"+code);
+        log.info("[WSS]断开" + code);
         this.daemon.interrupt();
     }
 
     @Override
     public void onMessage(String message) {
         EVENT event = JSONObject.parseObject(message).toJavaObject(EVENT.class);
-        switch (event.getS()){
-            case 0:{
-                log.debug("[WSS][事件][源]"+message);
+        switch (event.getS()) {
+            case 0: {
+                log.debug("[WSS][事件][源]" + message);
                 this.sn = event.getSn();
                 manger.eventParse.start(event);
                 break;
             }
-            case 1:{
-                log.info("[WSS][连接]"+message);
+            case 1: {
+                log.info("[WSS][连接]" + message);
                 break;
             }
-            case 3:{
+            case 3: {
                 log.info("[WSS][心跳]PONG");
                 break;
             }
-            case 5:{
-                log.info("[WSS][请求重新连接]"+message);
+            case 5: {
+                log.info("[WSS][请求重新连接]" + message);
 
                 break;
             }
-            case 6:{
-                log.info("[WSS][RESUME]"+message);
+            case 6: {
+                log.info("[WSS][RESUME]" + message);
 
                 break;
             }
@@ -86,10 +87,10 @@ public class Client extends WebSocketClient {
     @Override
     public void onError(Exception ex) {
         this.wscs = false;
-        log.warning("[WSS]"+ex);
+        log.warning("[WSS]" + ex);
     }
 
-    public void stopAll(){
+    public void stopAll() {
         this.daemon.stop();
         close();
     }

@@ -9,34 +9,33 @@ import java.util.List;
 
 public class PluginManger {
     public List<JavaPlugin> plugins;
-    public EventChannel eventChannel= new EventChannel();
+    public EventChannel eventChannel = new EventChannel();
     public EventParse eventParse = new EventParse(eventChannel);
+
     public PluginManger() {
         PluginLoader loader = new PluginLoader();
         this.plugins = loader.init();
-
     }
 
-    public void onLoad(Bot bot) {
-
-        for(JavaPlugin plugin:plugins){
-            plugin.setEventChannel(eventChannel);
-            plugin.setBot(bot);
+    public void onLoad() {
+        for (JavaPlugin plugin : plugins) {
             plugin.onLoad();
         }
-        this.eventChannel.init();
+
     }
 
-    public void onEnable() {
-        for(JavaPlugin plugin:plugins){
-
+    public void onEnable(Bot bot) {
+        for (JavaPlugin plugin : plugins) {
+            plugin.setEventChannel(eventChannel);
+            plugin.setBot(bot);
             plugin.onEnable();
         }
+        this.eventChannel.init();
 
     }
 
-    public void onDisable(){
-        for(JavaPlugin plugin:plugins){
+    public void onDisable() {
+        for (JavaPlugin plugin : plugins) {
             plugin.onDisable();
         }
     }

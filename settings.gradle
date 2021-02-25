@@ -1,2 +1,4 @@
 rootProject.name = 'kaiheila_bot_framework'
 
+include ":kaiheila_bot_sdk"
+project(":kaiheila_bot_sdk").projectDir = file("../kaiheila_bot_sdk")

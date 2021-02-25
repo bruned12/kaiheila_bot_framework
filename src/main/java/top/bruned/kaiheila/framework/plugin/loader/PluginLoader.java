@@ -17,15 +17,15 @@ import java.util.jar.JarFile;
 
 public class PluginLoader {
     private final File PluginPath = new File("plugins");
-    private Log log = new Log("PLUGIN");
+    private final Log log = new Log("PLUGIN");
 
-    public List<JavaPlugin> init(){
-        List<JavaPlugin> plugins= new ArrayList<>();;
+    public List<JavaPlugin> init() {
+        List<JavaPlugin> plugins = new ArrayList<>();
 
-        for(File pluginFile : PluginPath.listFiles()){
-            if (pluginFile.isFile() &&  pluginFile.getName().endsWith(".jar")){
+        for (File pluginFile : PluginPath.listFiles()) {
+            if (pluginFile.isFile() && pluginFile.getName().endsWith(".jar")) {
                 try {
-                    plugins.add(createPluginObject(getMainClass(pluginFile),pluginFile.getPath()));
+                    plugins.add(createPluginObject(getMainClass(pluginFile), pluginFile.getPath()));
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
@@ -34,30 +34,31 @@ public class PluginLoader {
         }
         return plugins;
     }
-    private JavaPlugin createPluginObject(String classpath,String pluginFile){
+
+    private JavaPlugin createPluginObject(String classpath, String pluginFile) {
         String PluginName = null;
         String Version = null;
         String Author = null;
         Class pluginClass = null;
         URL url = null;
         try {
-            url = new URL("file:"+pluginFile);
+            url = new URL("file:" + pluginFile);
         } catch (MalformedURLException e) {
             e.printStackTrace();
         }
         try {
             log.info(classpath);
-            URLClassLoader loader = new URLClassLoader(new URL[] {url});
-            pluginClass = Class.forName(classpath,true,loader);
+            URLClassLoader loader = new URLClassLoader(new URL[]{url});
+            pluginClass = Class.forName(classpath, true, loader);
         } catch (ClassNotFoundException e) {
             e.printStackTrace();
         }
-        if (pluginClass.isAnnotationPresent(PluginINFO.class)){
+        if (pluginClass.isAnnotationPresent(PluginINFO.class)) {
             PluginINFO annotation = (PluginINFO) pluginClass.getAnnotation(PluginINFO.class);
             PluginName = annotation.PluginName();
             Version = annotation.Version();
             Author = annotation.Author();
-            log.info("加载: "+PluginName+" 作者: "+Author +" 版本： "+Version);
+            log.info("加载: " + PluginName + " 作者: " + Author + " 版本： " + Version);
         }
         Constructor<JavaPlugin> constructor = null;
         try {
@@ -74,6 +75,7 @@ public class PluginLoader {
         plugin.setLog(new Log(PluginName));
         return plugin;
     }
+
     private String getMainClass(File file) throws IOException {
         JarFile jar = null;
         InputStream input = null;

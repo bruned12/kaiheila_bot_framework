@@ -8,16 +8,18 @@ import top.bruned.kaiheila.sdk.wsclient.result.event.GroupMessageEvent.GroupMess
 
 
 public class EventParse {
-    private EventChannel eventChannel;
-    private Log log = new Log("EVENT处理");
-    public EventParse(EventChannel eventChannel){
+    private final EventChannel eventChannel;
+    private final Log log = new Log("EVENT处理");
+
+    public EventParse(EventChannel eventChannel) {
         this.eventChannel = eventChannel;
     }
-    public void start(EVENT event){
+
+    public void start(EVENT event) {
         REVENT revent = event.getD().toJavaObject(REVENT.class);
-        switch (revent.getChannel_type()){
+        switch (revent.getChannel_type()) {
             case "GROUP": {
-                switch (revent.getType()){
+                switch (revent.getType()) {
                     case 1:
                         eventChannel.eventBroadCast(event.getD().toJavaObject(GroupMessageEvent.class));
                 }
