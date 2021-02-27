@@ -2,7 +2,7 @@ package top.bruned.kaiheila.framework.event;
 
 import top.bruned.kaiheila.framework.plugin.annotation.EventHandler;
 import top.bruned.kaiheila.sdk.util.Log;
-import top.bruned.kaiheila.sdk.wsclient.result.event.GroupMessageEvent.GroupMessageEvent;
+import top.bruned.kaiheila.sdk.wsclient.result.event.GroupTextMessageEvent.GroupTextMessageEvent;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.InvocationTargetException;
@@ -12,7 +12,7 @@ import java.util.Collections;
 import java.util.List;
 
 public class EventChannel {
-    private final List<PluginMethod> GroupMessageEventList = new ArrayList<>();
+    private final List<PluginMethod> GroupTextMessageEventList = new ArrayList<>();
     private final List<PluginMethod> PluginMethodList = new ArrayList<>();
     private final Log log = new Log("事件管道");
 
@@ -35,7 +35,7 @@ public class EventChannel {
     }
 
     public void eventBroadCast(Object event) {
-        for (PluginMethod method : GroupMessageEventList) {
+        for (PluginMethod method : GroupTextMessageEventList) {
 
             try {
                 method.getMethod().invoke(method.getEventObject(), event);
@@ -54,13 +54,13 @@ public class EventChannel {
         for (PluginMethod pluginMethod : PluginMethodList) {
             Class event = pluginMethod.getEventtype();
 
-            if (GroupMessageEvent.class.equals(event)) {
+            if (GroupTextMessageEvent.class.equals(event)) {
                 GroupMessageEventPluginTemp.add(pluginMethod);
             }
         }
         Collections.sort(GroupMessageEventPluginTemp, new PluginsComparator());
         for (PluginMethod pluginMethod : GroupMessageEventPluginTemp) {
-            GroupMessageEventList.add(pluginMethod);
+            GroupTextMessageEventList.add(pluginMethod);
         }
         log.debug("注册完毕");
     }
