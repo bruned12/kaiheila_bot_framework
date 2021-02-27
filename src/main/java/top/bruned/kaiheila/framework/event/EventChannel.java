@@ -9,9 +9,11 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 
 public class EventChannel {
+    private HashMap<Object,Object> eventRunList= new HashMap<>();
     private final List<PluginMethod> GroupTextMessageEventList = new ArrayList<>();
     private final List<PluginMethod> PluginMethodList = new ArrayList<>();
     private final Log log = new Log("事件管道");
@@ -35,17 +37,19 @@ public class EventChannel {
     }
 
     public void eventBroadCast(Object event) {
-        for (PluginMethod method : GroupTextMessageEventList) {
+        if (event.getClass() == GroupTextMessageEvent.class) {
+            for (PluginMethod method : GroupTextMessageEventList) {
 
-            try {
-                method.getMethod().invoke(method.getEventObject(), event);
-            } catch (IllegalAccessException e) {
-                e.printStackTrace();
-            } catch (InvocationTargetException e) {
-                log.debug(e.getCause().getMessage());
-                e.printStackTrace();
+                try {
+                    method.getMethod().invoke(method.getEventObject(), event);
+                } catch (IllegalAccessException e) {
+                    e.printStackTrace();
+                } catch (InvocationTargetException e) {
+                    log.debug(e.getCause().getMessage());
+                    e.printStackTrace();
+                }
+
             }
-
         }
     }
 
