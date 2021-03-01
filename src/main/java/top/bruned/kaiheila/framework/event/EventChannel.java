@@ -8,7 +8,6 @@ import java.lang.annotation.Annotation;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 
@@ -28,8 +27,6 @@ public class EventChannel {
                 if (annotation instanceof EventHandler) {
                     EventHandler eventHandler = (EventHandler) annotation;
                     PluginMethodList.add(new PluginMethod(eventHandler.priority(), eventHandler.ignoreCancelled(), method, eventObject));
-                } else {
-                    continue;
                 }
             }
         }
@@ -62,10 +59,8 @@ public class EventChannel {
                 GroupMessageEventPluginTemp.add(pluginMethod);
             }
         }
-        Collections.sort(GroupMessageEventPluginTemp, new PluginsComparator());
-        for (PluginMethod pluginMethod : GroupMessageEventPluginTemp) {
-            GroupTextMessageEventList.add(pluginMethod);
-        }
+        GroupMessageEventPluginTemp.sort(new PluginsComparator());
+        GroupTextMessageEventList.addAll(GroupMessageEventPluginTemp);
         log.debug("注册完毕");
     }
 
