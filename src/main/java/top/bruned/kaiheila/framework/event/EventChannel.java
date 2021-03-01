@@ -2,12 +2,6 @@ package top.bruned.kaiheila.framework.event;
 
 import top.bruned.kaiheila.framework.plugin.annotation.EventHandler;
 import top.bruned.kaiheila.sdk.util.Log;
-
-import java.lang.annotation.Annotation;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.util.*;
-
 import top.bruned.kaiheila.sdk.wsclient.result.event.GroupAddedReactionEvent.GroupAddedReactionEvent;
 import top.bruned.kaiheila.sdk.wsclient.result.event.GroupDeletedMessageEvent.GroupDeletedMessageEvent;
 import top.bruned.kaiheila.sdk.wsclient.result.event.GroupDeletedReactionEvent.GroupDeletedReactionEvent;
@@ -23,12 +17,17 @@ import top.bruned.kaiheila.sdk.wsclient.result.event.PersonGuildMemberOnlineEven
 import top.bruned.kaiheila.sdk.wsclient.result.event.PersonImgaeMessageEvent.PersonImageMessageEvent;
 import top.bruned.kaiheila.sdk.wsclient.result.event.PersonTextMessageEvent.PersonTextMessageEvent;
 
+import java.lang.annotation.Annotation;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.util.*;
+
 public class EventChannel {
-    private HashMap<Class,List<PluginMethod>> eventRunList= new HashMap<Class,List<PluginMethod>>();
     private final List<PluginMethod> PluginMethodList = new ArrayList<PluginMethod>();
     private final Log log = new Log("事件管道");
+    private final HashMap<Class, List<PluginMethod>> eventRunList = new HashMap<Class, List<PluginMethod>>();
 
-    public EventChannel(){
+    public EventChannel() {
         List<Class> registerEvent = Arrays.asList(
                 GroupAddedReactionEvent.class, GroupDeletedReactionEvent.class,
                 GroupDeletedMessageEvent.class, GroupExitedChannelEvent.class,
@@ -38,10 +37,11 @@ public class EventChannel {
                 PersonGuildMemberOfflineEvent.class, PersonGuildMemberOnlineEvent.class,
                 PersonImageMessageEvent.class, PersonTextMessageEvent.class
         );
-        for (Class clz : registerEvent){
-            eventRunList.put(clz,new ArrayList<PluginMethod>());
+        for (Class clz : registerEvent) {
+            eventRunList.put(clz, new ArrayList<PluginMethod>());
         }
     }
+
     public void registerEventClass(Object eventObject) {
         Class clz = eventObject.getClass();
         Method[] methods = clz.getDeclaredMethods();
@@ -58,23 +58,31 @@ public class EventChannel {
     }
 
     public void eventBroadCast(Object event) {
-        for (PluginMethod method : eventRunList.get(event.getClass())) {
-            try {
-                method.getMethod().invoke(method.getEventObject(), event);
-            } catch (IllegalAccessException e) {
-                e.printStackTrace();
-            } catch (InvocationTargetException e) {
-                log.debug(e.getCause().getMessage());
-                e.printStackTrace();
+
+        class CreateThread extends Thread {
+            @Override
+            public void run() {
+                for (PluginMethod method : eventRunList.get(event.getClass())) {
+                    try {
+                        method.getMethod().invoke(method.getEventObject(), event);
+                    } catch (IllegalAccessException e) {
+                        e.printStackTrace();
+                    } catch (InvocationTargetException e) {
+                        log.debug(e.getCause().getMessage());
+                        e.printStackTrace();
+                    }
+                }
             }
         }
+
+        new CreateThread().start();
     }
 
     public void init() {
         for (PluginMethod pluginMethod : PluginMethodList) {
             eventRunList.get(pluginMethod.getEventtype()).add(pluginMethod);
         }
-        for (Map.Entry<Class,List<PluginMethod>> map : eventRunList.entrySet()){
+        for (Map.Entry<Class, List<PluginMethod>> map : eventRunList.entrySet()) {
             eventRunList.get(map.getKey()).sort(new PluginsComparator());
         }
         log.debug("事件方法注册完毕");

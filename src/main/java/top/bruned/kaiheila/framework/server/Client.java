@@ -55,6 +55,7 @@ public class Client extends WebSocketClient {
     @Override
     public void onMessage(String message) {
         EVENT event = JSONObject.parseObject(message).toJavaObject(EVENT.class);
+
         switch (event.getS()) {
             case 0: {
                 log.debug("[WSS][事件][源]" + message);
