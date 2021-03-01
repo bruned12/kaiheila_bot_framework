@@ -40,7 +40,7 @@ public class Client extends WebSocketClient {
     @Override
     public void onOpen(ServerHandshake handshakedata) {
         this.wscs = true;
-        this.daemon = new Thread(() -> sendPing());
+        this.daemon = new Thread(this::sendPing);
         this.daemon.start();
 
     }
