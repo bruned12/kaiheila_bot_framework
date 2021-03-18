@@ -61,7 +61,6 @@ public class Main {
 
         try {
             client = new Client(new URI(wsUrl), log, manger);
-
             client.connect();
         } catch (URISyntaxException e) {
             e.printStackTrace();

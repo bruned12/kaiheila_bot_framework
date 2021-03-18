@@ -50,6 +50,7 @@ public class Client extends WebSocketClient {
         this.wscs = false;
         log.info("[WSS]断开" + code);
         this.daemon.interrupt();
+        connect();
     }
 
     @Override
