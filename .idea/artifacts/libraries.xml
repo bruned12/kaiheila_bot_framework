@@ -1,0 +1,27 @@
+<component name="ArtifactManager">
+  <artifact build-on-make="true" name="libraries">
+    <output-path>$PROJECT_DIR$/../KaiheilaBot</output-path>
+    <root id="root">
+      <element id="directory" name="libraries">
+        <element id="library" level="project" name="Gradle: com.alibaba:fastjson:1.2.75" />
+        <element id="library" level="project" name="Gradle: com.squareup.okhttp3:okhttp:4.9.0" />
+        <element id="library" level="project" name="Gradle: commons-logging:commons-logging:1.2" />
+        <element id="library" level="project" name="Gradle: org.apache.commons:commons-lang3:3.9" />
+        <element id="library" level="project" name="Gradle: org.jetbrains.kotlin:kotlin-stdlib:1.4.10" />
+        <element id="library" level="project" name="Gradle: org.jetbrains:annotations:13.0" />
+        <element id="library" level="project" name="Gradle: org.jetbrains.kotlin:kotlin-stdlib-common:1.4.10" />
+        <element id="library" level="project" name="Gradle: org.apache.commons:commons-configuration2:2.7" />
+        <element id="library" level="project" name="Gradle: org.slf4j:slf4j-api:1.7.25" />
+        <element id="library" level="project" name="Gradle: org.java-websocket:Java-WebSocket:1.5.1" />
+        <element id="library" level="project" name="Gradle: org.apache.commons:commons-text:1.8" />
+        <element id="library" level="project" name="Gradle: org.slf4j:slf4j-simple:1.7.9" />
+        <element id="library" level="project" name="Gradle: com.squareup.okio:okio:2.8.0" />
+        <element id="directory" name="SDK">
+          <element id="archive" name="kaiheila_bot_sdk.jar">
+            <element id="module-output" name="kaiheila_bot_framework.kaiheila_bot_sdk.main" />
+          </element>
+        </element>
+      </element>
+    </root>
+  </artifact>
+</component>

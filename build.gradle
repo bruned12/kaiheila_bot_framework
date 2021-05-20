@@ -7,13 +7,9 @@ version '1.0-SNAPSHOT'
 
 jar {
     manifest {
-        attributes (
-                "Manifest-Version": 1.0,
-                'Main-Class': 'top.bruned.kaiheila.framework.Main'
-        )
-    }
-    from {
-        configurations.compile.collect { it.isDirectory() ? it : zipTree(it) }
+        attributes 'Manifest-Version': 1.0
+        attributes 'Main-Class': 'top.bruned.kaiheila.framework.Main'
+        attributes 'Class-Path': getAllLib()+" libraries/SDK/kaiheila_bot_sdk.jar"
     }
 }
 repositories {
@@ -27,7 +23,17 @@ dependencies {
     compile("com.alibaba:fastjson:1.2.75")
     compile("org.apache.commons:commons-configuration2:2.7")
 }
-
+tasks.withType(Jar) {
+    destinationDir = file("$rootDir/../KaiheilaBot")
+}
 tasks.withType(JavaCompile) {
     options.encoding = "UTF-8"
+}
+def getAllLib(){
+    def libPath='libraries'
+    println("$rootDir/../KaiheilaBot/libraries")
+    return new File("$rootDir/../KaiheilaBot/libraries").list().findAll {it.endsWith('.jar') }.collect { "$libPath/$it" }.join(' ')
+}
+task testdef(){
+    println(getAllLib()+" libraries/SDK/kaiheila_bot_sdk.jar")
 }

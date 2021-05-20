@@ -1,70 +1,44 @@
 package top.bruned.kaiheila.framework;
 
-import top.bruned.kaiheila.framework.plugin.loader.PluginLoader;
+import top.bruned.kaiheila.framework.WebsocketClient.Client;
+import top.bruned.kaiheila.framework.config.Config;
 import top.bruned.kaiheila.framework.plugin.loader.PluginManger;
-import top.bruned.kaiheila.framework.server.Client;
 import top.bruned.kaiheila.sdk.bot.Bot;
 import top.bruned.kaiheila.sdk.util.Log;
 
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileWriter;
-import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.Properties;
 import java.util.Scanner;
 
 public class Main {
+    private static Config settingObject;
+    private static final File settingFile = new File("setting.json");
+    private static final File pluginPath = new File("plugins");
+    private static final File configPath = new File("config");
+    private static final File librariesPath = new File("libraries");
+    private static final Log log = new Log("MAIN");
+    private static Client client = null;
+
     public static void main(String[] args) {
-        Log log = new Log("MAIN");
-        File settingFile = new File("setting.properties");
-        File pluginPath = new File("plugins");
-        File configPath = new File("config");
-        Client client = null;
-        PluginManger manger = new PluginManger();
-        if (!settingFile.exists()) {
-            try {
-                settingFile.createNewFile();
-                FileWriter settingWrite = new FileWriter(settingFile.getName());
-                settingWrite.write("Authorization=Authorization");
-                settingWrite.flush();
-                settingWrite.close();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        }
-        if (!pluginPath.exists()) {
-            pluginPath.mkdir();
-        }
-        if (!configPath.exists()) {
-            configPath.mkdir();
-        }
-        Properties properties = new Properties();
-        try {
-            properties.load(new FileInputStream(settingFile));
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        manger.onLoad();
+        init();
+        PluginManger manger = new PluginManger(pluginPath, configPath);
 
         //初始化结束
-
-        PluginLoader loader = new PluginLoader();
-        String authorization = properties.getProperty("Authorization");
+        String authorization = settingObject.getJsonObject().getString("Authorization");
 
         Bot bot = new Bot(authorization);
-        manger.onEnable(bot);
+        manger.setBot(bot);
         log.info("[CONFIG]Authorization: " + authorization);
         String wsUrl = bot.api.getGateway_index(0).getUrl();
         log.info("[WSS]" + wsUrl);
-
         try {
             client = new Client(new URI(wsUrl), log, manger);
             client.connect();
         } catch (URISyntaxException e) {
             e.printStackTrace();
         }
+        manger.onEnable();
         Scanner scanner = new Scanner(System.in);
         while (true) {
             String str = scanner.next();
@@ -74,6 +48,20 @@ public class Main {
                 manger.onDisable();
                 return;
             }
+        }
+    }
+
+    public static void init() {
+        settingObject = new Config(settingFile);
+        settingObject.init("{\"Authorization\":\"ChangeMe!!!\"}");
+        if (!librariesPath.exists()) {
+            librariesPath.mkdir();
+        }
+        if (!pluginPath.exists()) {
+            pluginPath.mkdir();
+        }
+        if (!configPath.exists()) {
+            configPath.mkdir();
         }
     }
 

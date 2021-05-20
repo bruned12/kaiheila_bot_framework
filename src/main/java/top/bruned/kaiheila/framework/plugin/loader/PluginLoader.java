@@ -4,89 +4,95 @@ import top.bruned.kaiheila.framework.plugin.JavaPlugin;
 import top.bruned.kaiheila.framework.plugin.annotation.PluginINFO;
 import top.bruned.kaiheila.sdk.util.Log;
 
-import java.io.*;
-import java.lang.reflect.Constructor;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStreamReader;
 import java.lang.reflect.InvocationTargetException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 
 public class PluginLoader {
-    private final File PluginPath = new File("plugins");
     private final Log log = new Log("PLUGIN");
+    private final File PluginPath;
+    private URLClassLoader loader;
+
+    public PluginLoader(File pluginPath) {
+        this.PluginPath = pluginPath;
+    }
 
     public List<JavaPlugin> init() {
         List<JavaPlugin> plugins = new ArrayList<>();
+        //插件主类
+        List<String> pluginClassList = new ArrayList<>();
 
-        for (File pluginFile : PluginPath.listFiles()) {
-            if (pluginFile.isFile() && pluginFile.getName().endsWith(".jar")) {
-                try {
-                    plugins.add(createPluginObject(getMainClass(pluginFile), pluginFile.getPath()));
-                } catch (IOException e) {
-                    e.printStackTrace();
+        //插件URL 喂给URLClassloader
+        List<URL> pluginUrlList = new ArrayList<>();
+
+        //遍历plugin目录 粗判断
+        try {
+            for (File pluginFile : Objects.requireNonNull(PluginPath.listFiles())) {
+                if (pluginFile.isFile() && pluginFile.getName().endsWith(".jar")) {
+                    pluginClassList.add(getMainClass(new JarFile(pluginFile)));
+                    pluginUrlList.add(pluginFile.toURI().toURL());
                 }
             }
+        } catch (Throwable e) {
+            e.printStackTrace();
+        }
 
+        //获取loader
+        loader = new URLClassLoader(pluginUrlList.toArray(new URL[pluginUrlList.size()]));
+        //获取JavaPlugin对象
+        for (String realPluginFile : pluginClassList) {
+            try {
+                plugins.add(createPluginObject(realPluginFile));
+            } catch (Throwable e) {
+                e.printStackTrace();
+            }
         }
         return plugins;
     }
 
-    private JavaPlugin createPluginObject(String classpath, String pluginFile) {
-        String PluginName = null;
-        String Version = null;
-        String Author = null;
-        Class pluginClass = null;
-        URL url = null;
-        try {
-            url = new URL("file:" + pluginFile);
-        } catch (MalformedURLException e) {
-            e.printStackTrace();
-        }
-        try {
-            log.info(classpath);
-            URLClassLoader loader = new URLClassLoader(new URL[]{url});
-            pluginClass = Class.forName(classpath, true, loader);
-        } catch (ClassNotFoundException e) {
-            e.printStackTrace();
-        }
-        if (pluginClass.isAnnotationPresent(PluginINFO.class)) {
-            PluginINFO annotation = (PluginINFO) pluginClass.getAnnotation(PluginINFO.class);
-            PluginName = annotation.PluginName();
-            Version = annotation.Version();
-            Author = annotation.Author();
-            log.info("加载: " + PluginName + " 作者: " + Author + " 版本： " + Version);
-        }
-        Constructor<JavaPlugin> constructor = null;
-        try {
-            constructor = pluginClass.getConstructor();
-        } catch (NoSuchMethodException e) {
-            e.printStackTrace();
-        }
-        JavaPlugin plugin = null;
-        try {
-            plugin = constructor.newInstance();
-        } catch (InstantiationException | IllegalAccessException | InvocationTargetException e) {
-            e.printStackTrace();
-        }
-        plugin.setLog(new Log(PluginName));
+    private JavaPlugin createPluginObject(String classpath) throws MalformedURLException, ClassNotFoundException, NoSuchMethodException, InvocationTargetException, InstantiationException, IllegalAccessException {
+        String PluginName;
+        String Version;
+        String Author;
+        Class<JavaPlugin> pluginClass;
+
+        pluginClass = (Class<JavaPlugin>) Class.forName(classpath, true, this.loader);
+        JavaPlugin plugin = pluginClass.getConstructor().newInstance();
+        //解析注解
+        PluginINFO annotation = pluginClass.getAnnotation(PluginINFO.class);
+
+        PluginName = annotation.PluginName();
+        plugin.setPluginName(PluginName);
+        Version = annotation.Version();
+        plugin.setVersion(Version);
+        Author = annotation.Author();
+        plugin.setAuthor(Author);
+        log.info("插件: " + PluginName + " 作者: " + Author + " 版本： " + Version);
+        //返回对象
         return plugin;
     }
 
-    private String getMainClass(File file) throws IOException {
-        JarFile jar = null;
-        InputStream input = null;
-        jar = new JarFile(file);
-        JarEntry entry = jar.getJarEntry("plugin.properties");
-        input = jar.getInputStream(entry);
-        InputStreamReader isr = new InputStreamReader(input);
-        BufferedReader reader = new BufferedReader(isr);
-        String class_path = reader.readLine().split("=")[1];
-        reader.close();
-        return class_path.trim();
+    private String getMainClass(JarFile jar) {
+        String class_path = "";
+        try {
+            JarEntry entry = jar.getJarEntry("plugin.properties");
+            BufferedReader reader = new BufferedReader(new InputStreamReader(jar.getInputStream(entry)));
+            class_path = reader.readLine().split("=")[1].trim();
+            reader.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return class_path;
 
     }
 

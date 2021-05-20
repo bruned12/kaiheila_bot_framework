@@ -1,57 +1,50 @@
 package top.bruned.kaiheila.framework.config;
 
+import com.alibaba.fastjson.JSONObject;
 
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileWriter;
 import java.io.IOException;
-import java.util.Properties;
+
+import static top.bruned.kaiheila.framework.Util.readFileWithString;
+import static top.bruned.kaiheila.framework.Util.writerFileWithString;
 
 public class Config {
-    public File configFile;
-    private final File configPath = new File("./config");
-    private final Properties properties = new Properties();
-    private FileWriter writer;
+    private File file;
+    private JSONObject jsonObject;
 
-    public Config(String PluginName) {
-        this.configFile = new File(configPath, PluginName + ".properties");
-        if (!this.configFile.exists()) {
-            try {
-                configFile.createNewFile();
-            } catch (IOException e) {
-                e.printStackTrace();
+    public Config(File file) {
+        this.file = file;
+    }
+
+    public void init(String basedata) {
+        try {
+            if (!file.exists()) {
+                file.createNewFile();
+                writerFileWithString(file, basedata);
             }
-        }
-        try {
-            this.properties.load(new FileInputStream(configFile));
         } catch (IOException e) {
             e.printStackTrace();
         }
+        readConfig();
+    }
+
+    public void readConfig() {
         try {
-            this.writer = new FileWriter(configFile);
+            jsonObject = JSONObject.parseObject(readFileWithString(file));
         } catch (IOException e) {
-            e.printStackTrace();
+            init("{}");
         }
     }
 
-    public void save() {
-        try {
-            writer.write(properties.toString());
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        try {
-            writer.flush();
-        } catch (IOException e) {
-            e.printStackTrace();
+    public JSONObject getJsonObject() {
+        readConfig();
+        return jsonObject;
+    }
+
+    public void saveConfig() {
+        if (jsonObject != null) {
+            writerFileWithString(file, jsonObject.toJSONString());
         }
     }
 
-    public String getProperty(String key) {
-        return properties.getProperty(key);
-    }
-
-    public void setProperty(String key, String value) {
-        properties.setProperty(key, value);
-    }
 }

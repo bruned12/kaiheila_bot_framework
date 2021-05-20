@@ -13,4 +13,5 @@ public @interface PluginINFO {
     String Version() default "0.0.0";
 
     String Author();
+
 }

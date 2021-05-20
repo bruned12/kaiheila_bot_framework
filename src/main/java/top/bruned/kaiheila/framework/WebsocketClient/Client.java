@@ -1,4 +1,4 @@
-package top.bruned.kaiheila.framework.server;
+package top.bruned.kaiheila.framework.WebsocketClient;
 
 
 import com.alibaba.fastjson.JSONObject;
@@ -15,7 +15,6 @@ public class Client extends WebSocketClient {
     public int sn = 0;
     private Thread daemon;
     private final Log log;
-    private boolean wscs = false;
     private final PluginManger manger;
 
     public Client(URI serverURI, Log log, PluginManger manger) {
@@ -25,43 +24,37 @@ public class Client extends WebSocketClient {
     }
 
     public void sendPing() {
-        while (wscs) {
+        while (true) {
             try {
-                Thread.sleep(28000);
+                Thread.sleep(25000);
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
             log.info("[WSS][心跳]PING SN=" + this.sn);
             send(PING.PING(this.sn));
         }
-        log.info("[WSS][心跳PING]结束");
     }
 
     @Override
     public void onOpen(ServerHandshake handshakedata) {
-        this.wscs = true;
         this.daemon = new Thread(this::sendPing);
         this.daemon.start();
-
     }
 
     @Override
     public void onClose(int code, String reason, boolean remote) {
-        this.wscs = false;
         log.info("[WSS]断开" + code);
         this.daemon.interrupt();
-        connect();
+        this.sn = 0;
     }
 
     @Override
     public void onMessage(String message) {
         EVENT event = JSONObject.parseObject(message).toJavaObject(EVENT.class);
-
         switch (event.getS()) {
             case 0: {
-                log.debug("[WSS][事件][源]" + message);
                 this.sn = event.getSn();
-                manger.eventParse.start(event);
+                new Thread(() -> manger.eventChannel.start(event)).start();
                 break;
             }
             case 1: {
@@ -88,12 +81,13 @@ public class Client extends WebSocketClient {
 
     @Override
     public void onError(Exception ex) {
-        this.wscs = false;
         log.warning("[WSS]" + ex);
+        this.sn = 0;
     }
 
     public void stopAll() {
         this.daemon.stop();
+        this.sn = 0;
         close();
     }
 }
