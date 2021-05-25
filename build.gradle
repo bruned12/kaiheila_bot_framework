@@ -23,9 +23,7 @@ dependencies {
     compile("com.alibaba:fastjson:1.2.75")
     compile("org.apache.commons:commons-configuration2:2.7")
 }
-tasks.withType(Jar) {
-    destinationDir = file("$rootDir/../KaiheilaBot")
-}
+
 tasks.withType(JavaCompile) {
     options.encoding = "UTF-8"
 }

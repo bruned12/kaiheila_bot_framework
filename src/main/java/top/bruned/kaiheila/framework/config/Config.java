@@ -9,7 +9,7 @@ import static top.bruned.kaiheila.framework.Util.readFileWithString;
 import static top.bruned.kaiheila.framework.Util.writerFileWithString;
 
 public class Config {
-    private File file;
+    private final File file;
     private JSONObject jsonObject;
 
     public Config(File file) {

@@ -1,4 +1,4 @@
-package top.bruned.kaiheila.framework.WebsocketClient;
+package top.bruned.kaiheila.framework.wsclient;
 
 
 import com.alibaba.fastjson.JSONObject;
@@ -9,7 +9,14 @@ import top.bruned.kaiheila.sdk.util.Log;
 import top.bruned.kaiheila.sdk.wsclient.PING;
 import top.bruned.kaiheila.sdk.wsclient.base.EVENT;
 
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.net.URI;
+import java.nio.ByteBuffer;
+import java.util.zip.Inflater;
+import java.util.zip.InflaterInputStream;
 
 public class Client extends WebSocketClient {
     public int sn = 0;
@@ -42,17 +49,22 @@ public class Client extends WebSocketClient {
     }
 
     @Override
+    public void onMessage(String message) {
+        log.debug(message);
+    }
+
+    @Override
     public void onClose(int code, String reason, boolean remote) {
         log.info("[WSS]断开" + code);
         this.daemon.interrupt();
         this.sn = 0;
     }
 
-    @Override
-    public void onMessage(String message) {
+    public void message(String message) {
         EVENT event = JSONObject.parseObject(message).toJavaObject(EVENT.class);
         switch (event.getS()) {
             case 0: {
+                log.debug(message);
                 this.sn = event.getSn();
                 new Thread(() -> manger.eventChannel.start(event)).start();
                 break;
@@ -78,6 +90,10 @@ public class Client extends WebSocketClient {
         }
     }
 
+    @Override
+    public void onMessage(ByteBuffer bytes) {
+        message(new String(decompress(bytes.array())));
+    }
 
     @Override
     public void onError(Exception ex) {
@@ -89,5 +105,34 @@ public class Client extends WebSocketClient {
         this.daemon.stop();
         this.sn = 0;
         close();
+    }
+    public static byte[] decompress(byte[] data) {
+        byte[] output;
+
+        Inflater decompresser = new Inflater();
+        decompresser.reset();
+        decompresser.setInput(data);
+
+        ByteArrayOutputStream o = new ByteArrayOutputStream(data.length);
+        try {
+            byte[] buf = new byte[1024];
+            while (!decompresser.finished()) {
+                int i = decompresser.inflate(buf);
+                o.write(buf, 0, i);
+            }
+            output = o.toByteArray();
+        } catch (Exception e) {
+            output = data;
+            e.printStackTrace();
+        } finally {
+            try {
+                o.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+
+        decompresser.end();
+        return output;
     }
 }

@@ -1,6 +1,6 @@
 package top.bruned.kaiheila.framework;
 
-import top.bruned.kaiheila.framework.WebsocketClient.Client;
+import top.bruned.kaiheila.framework.wsclient.Client;
 import top.bruned.kaiheila.framework.config.Config;
 import top.bruned.kaiheila.framework.plugin.loader.PluginManger;
 import top.bruned.kaiheila.sdk.bot.Bot;
@@ -30,7 +30,7 @@ public class Main {
         Bot bot = new Bot(authorization);
         manger.setBot(bot);
         log.info("[CONFIG]Authorization: " + authorization);
-        String wsUrl = bot.api.getGateway_index(0).getUrl();
+        String wsUrl = bot.gateway_index(true);
         log.info("[WSS]" + wsUrl);
         try {
             client = new Client(new URI(wsUrl), log, manger);
